@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CreditSense · Loan Risk Predictor</title>
+  <meta name="description" content="AI-powered credit risk assessment" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <canvas id="bg-canvas"></canvas>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <main class="container">
+    <header class="hero">
+      <div class="logo reveal">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg>
+        <span>CreditSense</span>
+      </div>
+      <h1 class="reveal" style="--d:.1s">Know the <span class="grad">risk</span><br />before you lend.</h1>
+      <p class="sub reveal" style="--d:.2s">Fill in the applicant details and our ML model estimates the probability of default in real time.</p>
+      <div class="chips reveal" style="--d:.3s">
+        <button type="button" class="chip" data-sample="low">✨ Try low-risk sample</button>
+        <button type="button" class="chip" data-sample="high">🔥 Try high-risk sample</button>
+      </div>
+    </header>
+
+    <section class="layout">
+      <!-- FORM -->
+      <form id="loan-form" class="card glass tilt reveal" style="--d:.35s" novalidate>
+        <div class="card-title"><span class="dot"></span> Applicant Profile</div>
+
+        <div class="grid">
+          <div class="field">
+            <label for="person_age">Age</label>
+            <input type="number" id="person_age" min="18" max="100" placeholder="e.g. 28" required />
+          </div>
+          <div class="field">
+            <label for="person_income">Annual Income (₹ / $)</label>
+            <input type="number" id="person_income" min="0" step="any" placeholder="e.g. 60000" required />
+          </div>
+          <div class="field">
+            <label for="person_home_ownership">Home Ownership</label>
+            <select id="person_home_ownership" required>
+              <option value="" disabled selected>Select…</option>
+              <option>RENT</option><option>OWN</option><option>MORTGAGE</option><option>OTHER</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="person_emp_length">Employment Length (yrs)</label>
+            <input type="number" id="person_emp_length" min="0" max="80" placeholder="e.g. 4" required />
+          </div>
+        </div>
+
+        <div class="card-title mt"><span class="dot dot2"></span> Loan Details</div>
+        <div class="grid">
+          <div class="field">
+            <label for="loan_intent">Loan Purpose</label>
+            <select id="loan_intent" required>
+              <option value="" disabled selected>Select…</option>
+              <option value="PERSONAL">Personal</option>
+              <option value="EDUCATION">Education</option>
+              <option value="MEDICAL">Medical</option>
+              <option value="VENTURE">Venture</option>
+              <option value="HOMEIMPROVEMENT">Home Improvement</option>
+              <option value="DEBTCONSOLIDATION">Debt Consolidation</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="loan_grade">Loan Grade</label>
+            <select id="loan_grade" required>
+              <option value="" disabled selected>Select…</option>
+              <option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="loan_amnt">Loan Amount</label>
+            <input type="number" id="loan_amnt" min="0" step="any" placeholder="e.g. 10000" required />
+          </div>
+          <div class="field">
+            <label for="loan_int_rate">Interest Rate (%)</label>
+            <input type="number" id="loan_int_rate" min="0" max="40" step="0.01" placeholder="e.g. 11.5" required />
+          </div>
+          <div class="field full">
+            <label for="loan_percent_income">Loan % of Income <span class="hint">(auto-calculated · editable)</span></label>
+            <input type="number" id="loan_percent_income" min="0" max="1" step="0.01" placeholder="e.g. 0.17" required />
+          </div>
+        </div>
+
+        <div class="card-title mt"><span class="dot dot3"></span> Credit History</div>
+        <div class="grid">
+          <div class="field">
+            <label>Previous Default on File?</label>
+            <div class="toggle" id="default-toggle">
+              <button type="button" class="active" data-value="N">No</button>
+              <button type="button" data-value="Y">Yes</button>
+              <span class="thumb"></span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="cb_person_cred_hist_length">Credit History Length (yrs)</label>
+            <input type="number" id="cb_person_cred_hist_length" min="0" max="80" placeholder="e.g. 5" required />
+          </div>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn">
+          <span class="btn-text">Analyze Risk</span>
+          <span class="spinner"></span>
+          <svg class="arrow" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+
+      <!-- RESULT -->
+      <aside class="card glass result reveal" id="result-card" style="--d:.5s">
+        <div class="card-title"><span class="dot"></span> Risk Assessment</div>
+
+        <div class="placeholder" id="placeholder">
+          <div class="orbit"><i></i><i></i><i></i></div>
+          <p>Your prediction will appear here.</p>
+        </div>
+
+        <div class="output hidden" id="output">
+          <div class="gauge-wrap">
+            <svg viewBox="0 0 200 120" class="gauge">
+              <defs>
+                <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#22d3a6" />
+                  <stop offset="50%" stop-color="#facc15" />
+                  <stop offset="100%" stop-color="#ef4444" />
+                </linearGradient>
+              </defs>
+              <path class="track" d="M 20 100 A 80 80 0 0 1 180 100" />
+              <path id="gauge-fill" class="fill" d="M 20 100 A 80 80 0 0 1 180 100" />
+              <g id="threshold-marker"><line x1="100" y1="12" x2="100" y2="26" /></g>
+              <g id="needle"><line x1="100" y1="100" x2="100" y2="30" /><circle cx="100" cy="100" r="6" /></g>
+            </svg>
+            <div class="gauge-value"><span id="prob-num">0</span><small>%</small></div>
+            <div class="gauge-label">Probability of default</div>
+          </div>
+
+          <div class="badge" id="badge">—</div>
+
+          <div class="stats">
+            <div class="stat"><span>Threshold</span><b id="thr-val">—</b></div>
+            <div class="stat"><span>Prediction</span><b id="pred-val">—</b></div>
+          </div>
+
+          <p class="verdict" id="verdict"></p>
+        </div>
+      </aside>
+    </section>
+
+    <footer class="reveal" style="--d:.7s">Built with FastAPI &amp; scikit-learn · For decision support only</footer>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script src="/static/script.js"></script>
+</body>
+</html>
